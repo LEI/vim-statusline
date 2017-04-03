@@ -151,9 +151,9 @@ highlight link StatusLineWarn WarningMsg
 augroup StatusGroup
   autocmd!
   " autocmd ColorScheme * call statusline#Colors()
-  autocmd InsertEnter * call statusline#core#highlight(v:insertmode)
-  autocmd InsertChange * call statusline#core#highlight(v:insertmode)
-  autocmd InsertLeave * call statusline#core#highlight()
+  autocmd InsertEnter * call statusline#core#Highlight(v:insertmode)
+  autocmd InsertChange * call statusline#core#Highlight(v:insertmode)
+  autocmd InsertLeave * call statusline#core#Highlight()
 
   " autocmd WinEnter,FileType,BufWinEnter * let &l:statusline = statusline#Build()
   autocmd BufAdd,BufEnter,WinEnter * let g:statusline.winnr = winnr()
