@@ -147,7 +147,7 @@ augroup END
 " %( Start of item group (%-35. width and alignement of a section)
 " %) End of item group
 
-command! -nargs=* -bar StatusLine let &g:statusline = statusline#Build() | set noshowmode
+command! -nargs=* -bar StatusLineBuild let &g:statusline = statusline#Build()
 command! -nargs=* -bar StatusLineCursor let &g:statusline = statusline#Build('%f', '%([%b 0x%B]%)')
 
 " " v:vim_did_enter |!has('vim_starting')
