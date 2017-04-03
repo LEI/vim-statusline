@@ -1,23 +1,31 @@
 " Status line
 
+function! statusline#Get(...) abort
+  let l:key = a:0 ? a:1 : ''
+  let l:args = a:0 > 1 ? a:2 : []
+  let l:default = a:0 > 2 ? a:3 : ''
+  let l:str = ''
+  if exists('g:statusline.' . l:key)
+    " echom l:key exists('*g:statusline.' . l:key)
+    if exists('*g:statusline.' . l:key) " Function reference
+      let l:str = call(g:statusline[l:key], l:args)
+    elseif exists('*g:', g:statusline[l:key]) " Function name
+      let l:str = call(g:{g:statusline[l:key]}, l:args)
+    elseif !empty(g:statusline[l:key]) " String
+      let l:str = g:statusline[l:key]
+    endif
+  else
+    let l:str = l:default
+  endif
+  return l:str
+endfunction
+
 " Build status line
 function! statusline#Build(...) abort
   let l:name = a:0 && strlen(a:1) > 0 ? a:1 : '%f'
   let l:info = a:0 > 1 ? a:2 : '' " get(g:statusline, 'right', '')
-  " let l:func = get(g:, 'statusline_func', '')
-  " if l:func !=# '' && exists('*' . l:func)
-  "   return call(l:func, a:000)
-  " endif
-  if exists('g:statusline.func.left') && exists('*' . g:statusline.func.left)
-    let l:left = {g:statusline.func.left}(l:name)
-  else
-    let l:left = '%<' . l:name . ' %h%m%r'
-  endif
-  if exists('g:statusline.func.right') && exists('*' . g:statusline.func.right)
-    let l:right = {g:statusline.func.right}(l:info)
-  else
-    let l:right = l:info . '%-14.(%l,%c%V%) %P'
-  endif
+  let l:left = statusline#Get('left', [l:name], '%<' . l:name . ' %h%m%r')
+  let l:right = statusline#Get('right', [l:info], l:info . '%-14.(%l,%c%V%) %P')
   return l:left . '%=' . l:right
 endfunction
 
