@@ -1,63 +1,21 @@
 " Status line
 
+if !has('autocmd') || !has('statusline')
+  finish
+endif
+
 if get(g:, 'loaded_statusline', 0) || v:version < 700 || &compatible
   finish
 endif
+
 let g:loaded_statusline = 1
-
-" let s:save_cpo = &cpo
-" set cpo&vim
-
-" if has('autocmd') && !exists('#statusline')
-"   augroup statusline
-"     autocmd!
-
-"     " Redraw the status line of the current window
-"     autocmd InsertLeave * redrawstatus
-"     "autocmd InsertLeave * call statusline#update()
-"     "autocmd BufWinEnter,BufWinLeave * call statusline#update()
-
-"     autocmd BufAdd,BufEnter,WinEnter * call statusline#update()
-"     "autocmd BufLeave,WinLeave * call statusline#update(1)
-"     "autocmd WinEnter,BufWinEnter,FileType,ColorScheme,SessionLoadPost * call statusline#update()
-
-"     "autocmd TabEnter * echom 'TabEnter'
-"     "autocmd TabLeave * echom 'TabLeave'
-"     "autocmd VimResized * call statusline#update()
-
-"     autocmd ColorScheme * call statusline#colorscheme()
-"     "autocmd VimEnter * call statusline#template()
-
-"     " autocmd CmdwinEnter * let &l:statusline=' %#StatusLineMode#%{statusline#core#mode("cl")} %#StatusLineNC# %<COMMAND LINE %h%m%r %#StatusLineNC#%=%5.(%p%%%)%4.(%l%):%-4.(%c%V%)'
-"     autocmd CmdwinEnter * call statusline#update()
-"     autocmd CmdwinLeave * call statusline#update(winnr() - 1)
-
-"     "autocmd CmdwinEnter * call statusline#update({ 'branch': 0, 'encoding': 0, 'format': 0 })
-"     "autocmd CmdwinLeave * call statusline#unset()
-
-"     " getcmdwintype()
-"     " The character used for the pattern indicates the type of command-line:
-"     "  :: normal Ex command
-"     "  >: debug mode command |debug-mode|
-"     "  /: forward search string
-"     "  ?: backward search string
-"     "  =: expression for "= |expr-register|
-"     "  @: string for |input()|
-"     "  -: text for |:insert| or |:append|
-"   augroup END
-" endif
-
-" let &cpo = s:save_cpo
-" unlet s:save_cpo
-
-
-" set statusline=%!statusline#Build()
-
-let g:statusline_ignore_buftypes = 'help\|quickfix'
-let g:statusline_ignore_filetypes = 'dirvish\|netrw\|taglist\|qf\|vim-plug'
 
 let s:save_cpo = &cpoptions
 set cpoptions&vim
+
+" Variables: {{{1
+let g:statusline_ignore_buftypes = 'help\|quickfix'
+let g:statusline_ignore_filetypes = 'dirvish\|netrw\|taglist\|qf\|vim-plug'
 
 let g:statusline = get(g:, 'statusline', {})
 call extend(g:statusline, {'func': {}, 'modes': {}, 'symbols': {}}, 'keep')
@@ -65,27 +23,7 @@ call extend(g:statusline, {'func': {}, 'modes': {}, 'symbols': {}}, 'keep')
 " Active window number
 let g:statusline.winnr = winnr()
 
-" Format Markers: {{{
-" %< Where to truncate line if too long
-" %n Buffer number
-" %F Full path to the file in the buffed
-" %f Relative path or as typed
-" %t File name (tail)
-" %m Modified flag [+] (modified), [-] (unmodifiable) or nothing
-" %r Readonly flag [RO]
-" %w Preview window flag
-" %y Filetype [ruby]
-" %= Separation point between left and right aligned items
-" %l Current line number
-" %L Number of lines in buffer
-" %c Current column number
-" %V Current virtual column number (-n), if different from %c
-" %P Percentage through file of displayed window
-" %( Start of item group (%-35. width and alignement of a section)
-" %) End of item group
-" }}}
-
-" Modes: {{{
+" Modes: {{{1
 " n       Normal
 " no      Operator-pending
 " v       Visual by character
@@ -104,6 +42,7 @@ let g:statusline.winnr = winnr()
 " rm      The -- more -- prompt
 " r?      A confirm query of some sort
 " !       Shell or external command is executing
+
 call extend(g:statusline.modes, {
       \   'nc': '------',
       \   'n': 'NORMAL',
@@ -118,9 +57,10 @@ call extend(g:statusline.modes, {
       \   '': 'S-BLOCK',
       \   't': 'TERMINAL',
       \ }, 'keep')
-" }}}
 
-" Symbols: {{{ (key: 0x1F511)
+" Symbols: {{{1
+" key: 0x1F511
+
 let s:c = has('multi_byte') && &encoding ==# 'utf-8'
 call extend(g:statusline.symbols, {
       \   'key': s:c ? nr2char(0x1F511) : '$',
@@ -129,9 +69,9 @@ call extend(g:statusline.symbols, {
       \   'nl': s:c ? nr2char(0x2424) : '\n',
       \   'ws': s:c ? nr2char(0x39E) : '\s',
       \ }, 'keep')
-" }}}
 
-" Highlight Groups: {{{
+" Highlight Groups: {{{1
+
 highlight link StatusLineReverse StatusLine
 highlight link StatusLineInsert StatusLine
 highlight link StatusLineReplace StatusLine
@@ -139,14 +79,20 @@ highlight link StatusLineVisual StatusLine
 " highlight link StatusLineBranch StatusLine
 highlight link StatusLineError ErrorMsg
 highlight link StatusLineWarn WarningMsg
-" }}}
 
-" " v:vim_did_enter |!has('vim_starting')
-" let s:enable = get(g:, 'statusline#enable_at_startup', 1)
-" if s:enable
-"   call statusline#Colors()
-"   " call statusline#ctrlp#Enable()
-" endif
+" Functions: {{{1
+
+function! s:Replace_(string) abort
+  let l:str = a:string
+  if matchstr(l:str, '__.*__') ==# ''
+    return l:str
+  endif
+  let l:str = substitute(l:str, '__', '', 'g')
+  let l:str = substitute(l:str, '_', ' ', 'g')
+  return l:str
+endfunction
+
+" Auto Commands: {{{1
 
 augroup StatusGroup
   autocmd!
@@ -164,6 +110,15 @@ augroup StatusGroup
   autocmd CmdWinEnter * let g:statusline.winnr = winnr() | let b:branch_hidden = 1
         \ | let &l:statusline = statusline#Build('Command Line')
   autocmd CmdWinLeave * let g:statusline.winnr = winnr() - 1
+  " getcmdwintype()
+  " The character used for the pattern indicates the type of command-line:
+  "  :: normal Ex command
+  "  >: debug mode command |debug-mode|
+  "  /: forward search string
+  "  ?: backward search string
+  "  =: expression for "= |expr-register|
+  "  @: string for |input()|
+  "  -: text for |:insert| or |:append|
 
   " FIXME autocmd QuickFixCmdPost
   autocmd FileType qf let &l:statusline = statusline#Build('%f%( %{statusline#QfTitle()}%)')
@@ -171,19 +126,38 @@ augroup StatusGroup
   autocmd FileType vim-plug let &l:statusline = statusline#Build('Plugins')
 augroup END
 
-function! s:Replace_(string) abort
-  let l:str = a:string
-  if matchstr(l:str, '__.*__') ==# ''
-    return l:str
-  endif
-  let l:str = substitute(l:str, '__', '', 'g')
-  let l:str = substitute(l:str, '_', ' ', 'g')
-  return l:str
-endfunction
+" 1}}}
 
-" Default: %<%f%h%m%r%=%b\ 0x%B\ \ %l,%c%V\ %P
+" Format Markers: (default: %<%f%h%m%r%=%b\ 0x%B\ \ %l,%c%V\ %P) {{{1
+" %< Where to truncate line if too long
+" %n Buffer number
+" %F Full path to the file in the buffed
+" %f Relative path or as typed
+" %t File name (tail)
+" %m Modified flag [+] (modified), [-] (unmodifiable) or nothing
+" %r Readonly flag [RO]
+" %w Preview window flag
+" %y Filetype [ruby]
+" %= Separation point between left and right aligned items
+" %l Current line number
+" %L Number of lines in buffer
+" %c Current column number
+" %V Current virtual column number (-n), if different from %c
+" %P Percentage through file of displayed window
+" %( Start of item group (%-35. width and alignement of a section)
+" %) End of item group
+
 command! -nargs=* -bar StatusLine let &g:statusline = statusline#Build() | set noshowmode
 command! -nargs=* -bar StatusLineCursor let &g:statusline = statusline#Build('%f', '%([%b 0x%B]%)')
+
+" " v:vim_did_enter |!has('vim_starting')
+" let s:enable = get(g:, 'statusline_enable_at_startup', 1)
+" if s:enable
+"   call statusline#Colors()
+"   " call statusline#ctrlp#Enable()
+" endif
+
+" set statusline=%!statusline#Build()
 
 let &cpoptions = s:save_cpo
 unlet s:save_cpo
