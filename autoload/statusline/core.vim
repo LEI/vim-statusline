@@ -1,127 +1,102 @@
-" Core sections
-" vim: et sts=2 sw=2 ts=2
+" Status line functions
 
-" Display mode name
-function statusline#core#mode(...)
-  let l:stl_mode = a:0 > 0 ? a:1 : get(w:, 'statusline_mode', '')
+" Get the current mode and update SatusLine highlight group
+function! statusline#core#Mode(...) abort
+  if statusline#Hide('mode') || &filetype =~# g:statusline_ignore_filetypes
+    return ''
+  endif
+  let l:mode =  a:0 ? a:1 :mode()
+  if g:statusline.winnr != winnr() " && get(b:, 'mode_show', 0) != 1
+    let l:mode = 'nc'
+  endif
+  " if l:mode ==# 'n'
+  "   highlight! link StatusLine StatusLineNormal
+  " elseif l:mode ==# 'i'
+  "   highlight! link StatusLine StatusLineInsert
+  " elseif l:mode ==# 'R'
+  "   highlight! link StatusLine StatusLineReplace
+  " elseif l:mode ==# 'v' || l:mode ==# 'V' || l:mode ==# '^V'
+  "   highlight! link StatusLine StatusLineVisual
+  " endif
+  return get(g:statusline.modes, l:mode, l:mode)
+endfunction
 
-  if l:stl_mode =~ '^inactive'
-    let l:mode = '__'
+function! statusline#core#Highlight(...) abort
+  let l:im = a:0 ? a:1 : ''
+  " let l:im = a:0 ? a:1 : v:insertmode
+  if l:im ==# 'i' " Insert mode
+    highlight! link StatusLine StatusLineInsert
+  elseif l:im ==# 'r' " Replace mode
+    highlight! link StatusLine StatusLineReplace
+  elseif l:im ==# 'v' " Virtual replace mode
+    highlight! link StatusLine StatusLineReplace
+  elseif strlen(l:im) > 0
+    echoerr 'Unknown mode: ' . l:im
   else
-    let l:mode = mode()
+    highlight link StatusLine NONE
   endif
-
-  return get(g:statusline.mode_map, l:mode, l:mode)
 endfunction
 
-" Returns true if paste mode is enabled
-function statusline#core#paste()
-  if &paste
-    return g:statusline.symbols.paste
+" Buffer flags
+function! statusline#core#Flags() abort
+  if statusline#Hide('flags')
+    return ''
   endif
-
-  return ''
+  " echom 'FT ->' &filetype
+  if &buftype ==# 'help'
+    return 'H'
+  endif
+  let l:flags = []
+  if &previewwindow
+    call add(l:flags, 'PRV')
+  endif
+  if &readonly
+    call add(l:flags, 'RO')
+  endif
+  if &modified
+    call add(l:flags, '+')
+  elseif !&modifiable
+    call add(l:flags, '-')
+  endif
+  return join(l:flags, ',')
 endfunction
 
-function statusline#core#file()
-  " File name modifiers:
-  "   % Replaced by the current file name
-  "   :p Expand to the full path of the file
-  "   :~ Reduce file name to be relative to the home directory
-  "   :. Reduce file name to be relative to current directory
-  "   :s(|gs)?pat?sub? Substitute first(|all) occurence(s) of pat with sub
-  let l:cwd = ':s?' . getcwd() . '?.?' " pwd -> '.'
-  let l:dir = ':s?/$??' " Trailing slash
-  let l:name = ':t:r' " File name without extension
-  let l:modifier = ':p' . l:cwd . ':~' . l:dir
-
-  " [Command Line] ...
-  let l:brackets_pattern = '\[\([^\]]\+\)\]'
-  " __Gundo_Preview__ ...
-  let l:underscores_pattern = '__\(\w\+\)__'
-  " Title case
-  " let l:title_case_pattern = '\(\<\w\+\>\)'
-
-  " Get the current file name
-  let l:str = expand('%') " :t?
-
-  if l:str =~ l:brackets_pattern
-    " Remove surrounding brackets
-    " Uppercase matched string: \U\1\E
-    let l:str = substitute(l:str, l:brackets_pattern, '\1', '')
-  elseif l:str =~ l:underscores_pattern
-    let l:str = substitute(l:str, l:underscores_pattern, '\1', '')
-    let l:str = substitute(l:str, '_', ' ', 'g')
-  elseif &filetype =~ 'help'
-    " Display only file name in help buffers
-    let l:str = fnamemodify(l:str, l:name)
-  elseif strlen(l:str) == 0
-    let l:str = 'No Name'
-    " Try to display filetype if no name is available
-    " if strlen(&ft) > 0
-    "   " UPPER CASE
-    "   " let l:str = toupper(&ft)
-    "   " Title Case
-    "   " let l:str = substitute(&ft, l:title_case_pattern, '\u\1', 'g')
-    "   let l:str = &ft
-    " else
-    "   let l:str = '?'
-    " endif
-  else
-    " Cwdify and tildify the current file path
-    let l:str = fnamemodify(l:str, l:modifier)
-  endif
-
-  return l:str
-endfunction
-
-function statusline#core#flags()
-  let l:file = expand('%')
-  let l:flags = ''
-
-  if l:file !~ 'gundo' &&
-  \ &filetype !~ 'help\|netrw\|vim-plug' &&
-  \ &buftype !=# 'nofile'
-    let l:flags.= &modified ? "+" : &modifiable ? "" : "-"
-    if &readonly
-      let l:flags.= ',RO' " . get(g:statusline.symbols, 'readonly', 'RO')
+" File or buffer type
+function! statusline#core#Type() abort
+    if &filetype ==# ''
+      if &buftype !=# 'nofile'
+        return &buftype
+      endif
+      return ''
     endif
-  elseif &filetype =~ 'help'
-    let l:flags.= 'H'
+  if &filetype ==# 'netrw' && get(b:, 'netrw_browser_active', 0) == 1
+    let l:netrw_direction = (g:netrw_sort_direction =~# 'n' ? '+' : '-')
+    return &filetype . '[' . g:netrw_sort_by . l:netrw_direction . ']'
   endif
-
-  return l:flags
+  " if &filetype ==# 'qf'
+  "   return &buftype " quickfix
+  " endif
+  return &filetype
 endfunction
 
-" File type
-function statusline#core#type()
-  if &filetype != ''
-    return &filetype
+" File encoding and format
+function! statusline#core#Format() abort
+  if statusline#Hide('fileformat')
+    return ''
   endif
-
-  return 'no ft'
-endfunction
-
-" File encoding
-function statusline#core#encoding()
-  if (&fenc!='')
-    let l:encoding = &fenc
+  if strlen(&fileencoding) > 0
+    let l:enc = &fileencoding
   else
-    let l:encoding = &enc
+    let l:enc = &encoding
   endif
-
-  if exists("+bomb") && &bomb
-    let l:encoding.= ",B"
+  if exists('+bomb') && &bomb
+    let l:enc.= '-bom'
   endif
-
-  return l:encoding
-endfunction
-
-" Encrypted buffer
-function statusline#core#crypt()
-  if exists('+key') && !empty(&key)
-    return g:statusline.symbols.key
+  if l:enc ==# 'utf-8'
+    let l:enc = ''
   endif
-
-  return ''
+  if &fileformat !=# 'unix'
+    let l:enc.= '[' . &fileformat . ']'
+  endif
+  return l:enc
 endfunction
