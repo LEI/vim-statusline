@@ -13,6 +13,29 @@ let g:loaded_statusline = 1
 let s:save_cpo = &cpoptions
 set cpoptions&vim
 
+" set statusline=%!statusline#Build() | set noshowmode
+
+" Format Markers: {{{1
+
+" Default: %<%f%h%m%r%=%b\ 0x%B\ \ %l,%c%V\ %P
+" %< Where to truncate line if too long
+" %n Buffer number
+" %F Full path to the file in the buffed
+" %f Relative path or as typed
+" %t File name (tail)
+" %m Modified flag [+] (modified), [-] (unmodifiable) or nothing
+" %r Readonly flag [RO]
+" %w Preview window flag
+" %y Filetype [ruby]
+" %= Separation point between left and right aligned items
+" %l Current line number
+" %L Number of lines in buffer
+" %c Current column number
+" %V Current virtual column number (-n), if different from %c
+" %P Percentage through file of displayed window
+" %( Start of item group (%-35. width and alignement of a section)
+" %) End of item group
+
 " Variables: {{{1
 let g:statusline_ignore_buftypes = 'help\|quickfix'
 let g:statusline_ignore_filetypes = 'dirvish\|netrw\|taglist\|qf\|vim-plug'
@@ -126,38 +149,12 @@ augroup StatusGroup
   autocmd FileType vim-plug let &l:statusline = statusline#Build('Plugins')
 augroup END
 
-" 1}}}
-
-" Format Markers: (default: %<%f%h%m%r%=%b\ 0x%B\ \ %l,%c%V\ %P) {{{1
-" %< Where to truncate line if too long
-" %n Buffer number
-" %F Full path to the file in the buffed
-" %f Relative path or as typed
-" %t File name (tail)
-" %m Modified flag [+] (modified), [-] (unmodifiable) or nothing
-" %r Readonly flag [RO]
-" %w Preview window flag
-" %y Filetype [ruby]
-" %= Separation point between left and right aligned items
-" %l Current line number
-" %L Number of lines in buffer
-" %c Current column number
-" %V Current virtual column number (-n), if different from %c
-" %P Percentage through file of displayed window
-" %( Start of item group (%-35. width and alignement of a section)
-" %) End of item group
+" Commands: {{{1
 
 command! -nargs=* -bar StatusLineBuild let &g:statusline = statusline#Build()
 command! -nargs=* -bar StatusLineCursor let &g:statusline = statusline#Build('%f', '%([%b 0x%B]%)')
 
-" " v:vim_did_enter |!has('vim_starting')
-" let s:enable = get(g:, 'statusline_enable_at_startup', 1)
-" if s:enable
-"   call statusline#Colors()
-"   " call statusline#ctrlp#Enable()
-" endif
-
-" set statusline=%!statusline#Build()
+" 1}}}
 
 let &cpoptions = s:save_cpo
 unlet s:save_cpo
