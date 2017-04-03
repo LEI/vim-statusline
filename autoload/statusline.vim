@@ -4,18 +4,15 @@ function! statusline#Get(...) abort
   let l:key = a:0 ? a:1 : ''
   let l:args = a:0 > 1 ? a:2 : []
   let l:default = a:0 > 2 ? a:3 : ''
-  let l:str = ''
-  if exists('g:statusline.' . l:key)
-    " echom l:key exists('*g:statusline.' . l:key)
-    if exists('*g:statusline.' . l:key) " Function reference
-      let l:str = call(g:statusline[l:key], l:args)
-    elseif exists('*g:', g:statusline[l:key]) " Function name
-      let l:str = call(g:{g:statusline[l:key]}, l:args)
-    elseif !empty(g:statusline[l:key]) " String
-      let l:str = g:statusline[l:key]
-    endif
-  else
-    let l:str = l:default
+  let l:str = l:default
+  if !exists('g:statusline.' . l:key)
+    return l:str
+  endif
+  " Function reference, function name or string
+  if exists('*g:statusline.' . l:key) || exists('*g:' . g:statusline[l:key])
+    let l:str = call(g:statusline[l:key], l:args)
+  elseif !empty(g:statusline[l:key])
+    let l:str = g:statusline[l:key]
   endif
   return l:str
 endfunction
