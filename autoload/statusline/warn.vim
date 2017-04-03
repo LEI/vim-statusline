@@ -1,6 +1,6 @@
 " Whitespace warnings
 
-function! s:mixed_ident()
+function! s:MixedIndent()
   " Find spaces that arent used as alignment in the first indent column
   " let l:et = &expandtab ? 'spaces' : 'tabs' " &et / &noet
   " let l:s = search('^ \{' . &tabstop . ',}[^\t]', 'nw')
@@ -22,7 +22,7 @@ function! statusline#warn#Indent() abort
     return ''
   endif
   if !exists('b:statusline_indent')
-    let b:statusline_indent = s:mixed_ident()
+    let b:statusline_indent = s:MixedIndent()
   endif
   return b:statusline_indent
 endfunction

@@ -167,11 +167,11 @@ augroup StatusGroup
 
   " FIXME autocmd QuickFixCmdPost
   autocmd FileType qf let &l:statusline = statusline#Build('%f%( %{statusline#QfTitle()}%)')
-  autocmd FileType taglist let &l:statusline = statusline#Build(s:replace_(expand('%')))
+  autocmd FileType taglist let &l:statusline = statusline#Build(s:Replace_(expand('%')))
   autocmd FileType vim-plug let &l:statusline = statusline#Build('Plugins')
 augroup END
 
-function! s:replace_(string) abort
+function! s:Replace_(string) abort
   let l:str = a:string
   if matchstr(l:str, '__.*__') ==# ''
     return l:str
@@ -182,7 +182,8 @@ function! s:replace_(string) abort
 endfunction
 
 " Default: %<%f%h%m%r%=%b\ 0x%B\ \ %l,%c%V\ %P
-command! -nargs=* -bar CursorStl let &g:statusline = statusline#Build('%f', '%([%b 0x%B]%)')
+command! -nargs=* -bar StatusLine let &g:statusline = statusline#Build() | set noshowmode
+command! -nargs=* -bar StatusLineCursor let &g:statusline = statusline#Build('%f', '%([%b 0x%B]%)')
 
 let &cpoptions = s:save_cpo
 unlet s:save_cpo
