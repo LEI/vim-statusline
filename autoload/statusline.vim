@@ -26,40 +26,35 @@ function! statusline#Build(...) abort
   return l:left . '%=' . l:right
 endfunction
 
-function! statusline#QfTitle() abort
-  return get(w:, 'quickfix_title', '')
+" Change status line highlight groups
+function! statusline#Highlight(...) abort
+  let l:im = a:0 ? a:1 : ''
+  " let l:im = a:0 ? a:1 : v:insertmode
+  if l:im ==# 'i' " Insert mode
+    highlight! link StatusLine StatusLineInsert
+  elseif l:im ==# 'r' " Replace mode
+    highlight! link StatusLine StatusLineReplace
+  elseif l:im ==# 'v' " Virtual replace mode
+    highlight! link StatusLine StatusLineReplace
+  elseif strlen(l:im) > 0
+    echoerr 'Unknown mode: ' . l:im
+  else
+    highlight link StatusLine NONE
+  endif
+  " let l:mode = mode()
+  " if l:mode ==# 'n'
+  "   highlight! link StatusLine StatusLineNormal
+  " elseif l:mode ==# 'i'
+  "   highlight! link StatusLine StatusLineInsert
+  " elseif l:mode ==# 'R'
+  "   highlight! link StatusLine StatusLineReplace
+  " elseif l:mode ==# 'v' || l:mode ==# 'V' || l:mode ==# '^V'
+  "   highlight! link StatusLine StatusLineVisual
+  " endif
 endfunction
 
-function! statusline#Hide(...) abort
-  let l:bufvar = a:0 ? a:1 : ''
-  " let l:buftypes = 'quickfix'
-  if l:bufvar !=# '' && get(b:, l:bufvar . '_hidden', 0)
-    return 1
-  endif
-  if l:bufvar ==# 'mode'
-    if &filetype =~# g:statusline_ignore_filetypes " && !&modifiable
-      return 1
-    endif
-  elseif l:bufvar ==# 'branch'
-    if &buftype =~# g:statusline_ignore_buftypes
-      return 1
-    endif
-  elseif l:bufvar ==# 'flags'
-    if &filetype =~# g:statusline_ignore_filetypes
-      return 1
-    endif
-    " if &filetype ==# '' && &buftype ==# 'nofile'
-    "   return '' " NetrwMessage
-    " endif
-  " elseif l:bufvar ==# 'fileinfo'
-  elseif l:bufvar ==# 'fileformat'
-    if &filetype ==# '' && &buftype !=# '' && &buftype !=# 'nofile'
-      return 1
-    endif
-    if &filetype =~# 'netrw' || &buftype =~# g:statusline_ignore_buftypes
-      return 1
-    endif
-  endif
+function! statusline#QfTitle() abort
+  return get(w:, 'quickfix_title', '')
 endfunction
 
 " vim: et sts=2 sw=2 ts=2 foldenable foldmethod=marker

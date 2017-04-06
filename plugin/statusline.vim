@@ -37,8 +37,9 @@ set cpoptions&vim
 " %) End of item group
 
 " Variables: {{{1
-let g:statusline_ignore_buftypes = 'help\|quickfix'
-let g:statusline_ignore_filetypes = 'dirvish\|netrw\|taglist\|qf\|vim-plug'
+
+" Hide mode and flags under these file types
+let g:statusline_ignore_filetypes = 'dirvish\|man\|netrw\|taglist\|qf\|vim-plug'
 
 let g:statusline = get(g:, 'statusline', {})
 call extend(g:statusline, {'func': {}, 'modes': {}, 'symbols': {}}, 'keep')
@@ -120,9 +121,9 @@ endfunction
 augroup StatusGroup
   autocmd!
   " autocmd ColorScheme * call statusline#Colors()
-  autocmd InsertEnter * call statusline#core#Highlight(v:insertmode)
-  autocmd InsertChange * call statusline#core#Highlight(v:insertmode)
-  autocmd InsertLeave * call statusline#core#Highlight()
+  autocmd InsertEnter * call statusline#Highlight(v:insertmode)
+  autocmd InsertChange * call statusline#Highlight(v:insertmode)
+  autocmd InsertLeave * call statusline#Highlight()
 
   " autocmd WinEnter,FileType,BufWinEnter * let &l:statusline = statusline#Build()
   autocmd BufAdd,BufEnter,WinEnter * let g:statusline.winnr = winnr()
@@ -130,9 +131,11 @@ augroup StatusGroup
   " Update whitespace warnings (add InsertLeave?)
   autocmd BufWritePost,CursorHold * unlet! b:statusline_indent | unlet! b:statusline_trailing
 
-  autocmd CmdWinEnter * let g:statusline.winnr = winnr() | let b:branch_hidden = 1
+  autocmd CmdWinEnter * let g:statusline.winnr = winnr()
+        \ | let b:command_window = 1
         \ | let &l:statusline = statusline#Build('Command Line')
   autocmd CmdWinLeave * let g:statusline.winnr = winnr() - 1
+        \ | unlet b:command_window
   " getcmdwintype()
   " The character used for the pattern indicates the type of command-line:
   "  :: normal Ex command

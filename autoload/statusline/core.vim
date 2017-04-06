@@ -2,47 +2,24 @@
 
 " Get the current mode and update SatusLine highlight group
 function! statusline#core#Mode(...) abort
-  if statusline#Hide('mode') || &filetype =~# g:statusline_ignore_filetypes
+  if &filetype =~# g:statusline_ignore_filetypes || !&modifiable
     return ''
   endif
   let l:mode =  a:0 ? a:1 :mode()
   if g:statusline.winnr != winnr() " && get(b:, 'mode_show', 0) != 1
     let l:mode = 'nc'
   endif
-  " if l:mode ==# 'n'
-  "   highlight! link StatusLine StatusLineNormal
-  " elseif l:mode ==# 'i'
-  "   highlight! link StatusLine StatusLineInsert
-  " elseif l:mode ==# 'R'
-  "   highlight! link StatusLine StatusLineReplace
-  " elseif l:mode ==# 'v' || l:mode ==# 'V' || l:mode ==# '^V'
-  "   highlight! link StatusLine StatusLineVisual
-  " endif
   return get(g:statusline.modes, l:mode, l:mode)
-endfunction
-
-function! statusline#core#Highlight(...) abort
-  let l:im = a:0 ? a:1 : ''
-  " let l:im = a:0 ? a:1 : v:insertmode
-  if l:im ==# 'i' " Insert mode
-    highlight! link StatusLine StatusLineInsert
-  elseif l:im ==# 'r' " Replace mode
-    highlight! link StatusLine StatusLineReplace
-  elseif l:im ==# 'v' " Virtual replace mode
-    highlight! link StatusLine StatusLineReplace
-  elseif strlen(l:im) > 0
-    echoerr 'Unknown mode: ' . l:im
-  else
-    highlight link StatusLine NONE
-  endif
 endfunction
 
 " Buffer flags
 function! statusline#core#Flags() abort
-  if statusline#Hide('flags')
+  if &filetype =~# g:statusline_ignore_filetypes || &buftype =~# 'terminal'
     return ''
   endif
-  " echom 'FT ->' &filetype
+  " if &filetype ==# '' && &buftype ==# 'nofile'
+  "   return '' " NetrwMessage
+  " endif
   if &buftype ==# 'help'
     return 'H'
   endif
@@ -63,12 +40,12 @@ endfunction
 
 " File or buffer type
 function! statusline#core#Type() abort
-    if &filetype ==# ''
-      if &buftype !=# 'nofile'
-        return &buftype
-      endif
-      return ''
+  if &filetype ==# ''
+    if &buftype !=# 'nofile'
+      return &buftype
     endif
+    return ''
+  endif
   if &filetype ==# 'netrw' && get(b:, 'netrw_browser_active', 0) == 1
     let l:netrw_direction = (g:netrw_sort_direction =~# 'n' ? '+' : '-')
     return &filetype . '[' . g:netrw_sort_by . l:netrw_direction . ']'
@@ -81,7 +58,10 @@ endfunction
 
 " File encoding and format
 function! statusline#core#Format() abort
-  if statusline#Hide('fileformat')
+  if &filetype ==# '' && &buftype !=# '' && &buftype !=# 'nofile'
+    return ''
+  endif
+  if &filetype =~# 'netrw' || &buftype =~# 'help\|quickfix'
     return ''
   endif
   if strlen(&fileencoding) > 0
