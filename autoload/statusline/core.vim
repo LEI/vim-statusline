@@ -1,5 +1,7 @@
 " Status line functions
 
+let g:statusline_ignore_filetypes = get(g:, 'statusline_ignore_filetypes', '')
+
 " Get the current mode and update SatusLine highlight group
 function! statusline#core#Mode(...) abort
   if &filetype =~# g:statusline_ignore_filetypes || !&modifiable
